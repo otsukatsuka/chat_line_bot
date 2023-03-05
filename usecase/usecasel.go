@@ -20,7 +20,6 @@ type usecase struct {
 }
 
 func (u usecase) TalkToChatGPT(ctx context.Context, message dto.Message) error {
-	log.Print("TalkToChatGPT")
 	switch msg := message.LineMessage.(type) {
 	case *linebot.TextMessage:
 		chatGPTMessages := model.Messages{
@@ -29,14 +28,11 @@ func (u usecase) TalkToChatGPT(ctx context.Context, message dto.Message) error {
 				Content: msg.Text,
 			},
 		}
-		log.Print(chatGPTMessages)
-		log.Print("u.chatGPTClient.Talk")
 		res, err := u.chatGPTClient.Talk(chatGPTMessages)
 		if err != nil {
 			log.Print(err)
 			return err
 		}
-		log.Print("ReplyMessage")
 		if err := u.lineClient.ReplyMessage(message.ReplyToken, res.Choices[0].Message.Content); err != nil {
 			log.Print(err)
 			return err

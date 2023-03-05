@@ -45,15 +45,12 @@ type OpenaiResponse struct {
 }
 
 func (c *chatGPTClient) Talk(messages model.Messages) (*OpenaiResponse, error) {
-	log.Print("Talk")
 	requestBody := OpenaiRequest{
 		Model:    string(c.model),
 		Messages: messages,
 	}
 
 	requestJSON, _ := json.Marshal(requestBody)
-	log.Print("**********")
-	log.Print(requestJSON)
 	req, err := http.NewRequest("POST", string(c.url), bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return nil, err
@@ -78,11 +75,9 @@ func (c *chatGPTClient) Talk(messages model.Messages) (*OpenaiResponse, error) {
 	if err != nil {
 		panic(err)
 	}
-	log.Printf("AAAAAAAAAAAA %v", string(body))
 	var response OpenaiResponse
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		log.Printf("Error: %v", err.Error())
 		return &OpenaiResponse{}, nil
 	}
 
