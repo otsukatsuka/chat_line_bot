@@ -4,7 +4,7 @@ import (
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 )
 
-type LinetClient interface {
+type Line interface {
 	ReplyMessage(replyToken string, content string) error
 }
 
@@ -12,7 +12,7 @@ type lineClient struct {
 	client linebot.Client
 }
 
-func NewLineClient(client linebot.Client) LinetClient {
+func NewLineClient(client linebot.Client) Line {
 	return &lineClient{client: client}
 }
 

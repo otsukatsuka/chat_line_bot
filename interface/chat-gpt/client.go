@@ -10,7 +10,7 @@ import (
 )
 
 type ChatGPTClient interface {
-	Talk(messages model.Messages) (*OpenaiResponse, error)
+	Talk(messages model.Messages) (*OpenaiResponse, model.Messages, error)
 }
 
 type chatGPTClient struct {
@@ -44,7 +44,7 @@ type OpenaiResponse struct {
 	Usages  model.Usage   `json:"usage"`
 }
 
-func (c *chatGPTClient) Talk(messages model.Messages) (*OpenaiResponse, error) {
+func (c *chatGPTClient) Talk(messages model.Messages) (*OpenaiResponse, model.Messages, error) {
 	requestBody := OpenaiRequest{
 		Model:    string(c.model),
 		Messages: messages,
@@ -53,7 +53,7 @@ func (c *chatGPTClient) Talk(messages model.Messages) (*OpenaiResponse, error) {
 	requestJSON, _ := json.Marshal(requestBody)
 	req, err := http.NewRequest("POST", string(c.url), bytes.NewBuffer(requestJSON))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -62,7 +62,7 @@ func (c *chatGPTClient) Talk(messages model.Messages) (*OpenaiResponse, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
@@ -78,7 +78,7 @@ func (c *chatGPTClient) Talk(messages model.Messages) (*OpenaiResponse, error) {
 	var response OpenaiResponse
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		return &OpenaiResponse{}, nil
+		return &OpenaiResponse{}, nil, nil
 	}
 
 	messages = append(messages, model.Message{
@@ -86,5 +86,5 @@ func (c *chatGPTClient) Talk(messages model.Messages) (*OpenaiResponse, error) {
 		Content: response.Choices[0].Message.Content,
 	})
 
-	return &response, nil
+	return &response, messages, nil
 }

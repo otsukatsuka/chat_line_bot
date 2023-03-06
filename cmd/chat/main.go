@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"github.com/otsukatsuka/chat_line_bot/config"
+	"github.com/otsukatsuka/chat_line_bot/interface/redis"
 	"log"
 	"net/http"
 )
@@ -27,12 +28,19 @@ func main() {
 	if err != nil {
 		log.Print(err)
 	}
+	redisClient, err := redis.NewRedisClient()
+	if err != nil {
+		log.Print(err)
+	}
+	redisConn := redisClient.GetConnection()
+	defer redisConn.Close()
 	r := newRouter(
 		ctx,
 		*lineClient,
 		chatGPTConfig.URL,
 		chatGPTConfig.APIKEY,
 		chatGPTConfig.MODEL,
+		redisConn,
 	)
 	addr := fmt.Sprintf(":%v", apiConfig.PORT)
 	server := http.Server{
